@@ -1,0 +1,13 @@
+1. Feature distribution
+https://seaborn.pydata.org/tutorial/distributions.html
+
+2.Описательная статистика на python
+http://easydan.com/arts/2016/descriptive-stat-python/
+квантили с pandas:
+http://qaru.site/questions/2057552/plotting-quantiles-median-and-spread-using-scipy-and-matplotlib
+
+pickle model
+https://medium.com/up-engineering/saving-ml-and-dl-models-in-mongodb-using-python-f0bbbae256f0
+
+3. Отличие стандартизации от нормализации
+https://medium.com/@rrfd/standardize-or-normalize-examples-in-python-e3f174b65dfc

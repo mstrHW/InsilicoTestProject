@@ -1,0 +1,4 @@
+#!C:\Users\HWer\PycharmProjects\InsilicoTestProject\venv\Scripts\python.exe
+# EASY-INSTALL-SCRIPT: 'apache-airflow===2.0.0.dev0-','airflow'
+__requires__ = 'apache-airflow===2.0.0.dev0-'
+__import__('pkg_resources').run_script('apache-airflow===2.0.0.dev0-', 'airflow')
