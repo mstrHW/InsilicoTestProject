@@ -1,10 +1,11 @@
-from module.mongodb_loader import MongoDBLoader, np_to_json
-from module.models.model_factory import make_nn_model
-from module.metrics import get_f1_per_class, multiclass_roc_auc_score, confusion_matrix
-from module.plot_graphs import plot_confusion_matrix, plot_roc_per_class
+from module.data_loader.mongodb_loader import MongoDBLoader, np_to_json
+from module.models.model_factory import make_model
+from module.utils.metrics import get_f1_per_class, multiclass_roc_auc_score, confusion_matrix
+from module.utils.plot_graphs import plot_confusion_matrix, plot_roc_per_class
 
 from sklearn.model_selection import cross_val_predict
-import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import GridSearchCV
 
 
 def cross_val(model, train_data, test_data, mongodb_loader):
@@ -25,57 +26,48 @@ def calculate_metrics(y_test, y_pred, y_probabilities):
     for class_index in range(y_probabilities.shape[1]):
         metrics_report[str(class_index)]['auc'] = auc[class_index]
 
-    print(metrics_report)
-    print(auc)
-
     return metrics_report
 
 
-def save_metrics(metrics, mongodb_loader):
-    mongodb_loader.insert_data('metrics', 'metrics', metrics)
+def get_best_parameters(model, x_train, y_train):
+    parameters = model.get_grid_search_parameters()
+    clf = GridSearchCV(model.classifier, parameters, n_jobs=-1)
+    clf.fit(x_train, y_train)
+    return clf.best_params_
 
 
-def main():
-    mongodb_loader = MongoDBLoader('iris_dataset2')
+def main(model_name, mongo_dataset_name):
+    mongodb_loader = MongoDBLoader(mongo_dataset_name)
     train_data, test_data = mongodb_loader.load_train_test('dataset')
 
     (x_train, y_train) = train_data
     (x_test, y_test) = test_data
 
-    model = make_nn_model()
+    model = make_model(model_name)
 
     cross_val(model, train_data, test_data, mongodb_loader)
 
-    parameters = {'solver': ['lbfgs'], 'max_iter': [1000, 1500, 2000],
-                  'alpha': 10.0 ** -np.arange(1, 10, 3), 'hidden_layer_sizes': np.arange(10, 100, 10),
-                  'random_state': [0, 3, 6, 9]}
-    from sklearn.model_selection import GridSearchCV
+    best_params = get_best_parameters(model, x_train, y_train)
 
-    clf = GridSearchCV(model.classifier, parameters, n_jobs=-1)
+    model.set_params(best_params)
+    model.train(x_train, y_train)
 
-    clf.fit(x_train, y_train)
-    print(clf.score(x_train, y_train))
-    print(clf.score(x_test, y_test))
-    print(clf.best_params_)
-
-    model.classifier.set_params(**clf.best_params_)
-    model.classifier.fit(x_train, y_train)
-
-    print(model.classifier.score(x_train, y_train))
-    print(model.classifier.score(x_test, y_test))
-    model_name = model.name
-
-    mongodb_loader.save_model(model_name, model)
+    mongodb_loader.save_model(model.name, model)
 
     y_pred = model.classifier.predict(x_test)
     y_probabilities = model.classifier.predict_proba(x_test)
 
     metrics_report = calculate_metrics(y_test, y_pred, y_probabilities)
-    save_metrics(metrics_report, mongodb_loader)
+    mongodb_loader.save_metrics(metrics_report)
 
     matrix = confusion_matrix(y_test, y_pred)
-    plot_confusion_matrix(matrix)
-    plot_roc_per_class(y_test, y_probabilities)
+
+    heatmap = plot_confusion_matrix(matrix)
+    plt.close()
+    roc = plot_roc_per_class(y_test, y_probabilities)
+    plt.close()
+
+    mongodb_loader.save_graphs(heatmap, roc)
 
 
 if __name__ == '__main__':

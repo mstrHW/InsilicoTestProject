@@ -1,6 +1,6 @@
 import numpy as np
 
-from module.mongodb_loader import MongoDBLoader
+from module.data_loader.mongodb_loader import MongoDBLoader
 from module.models.nn_model import NNModel
 
 # def test_cr():

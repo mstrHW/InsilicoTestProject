@@ -3,18 +3,30 @@ import pandas as pd
 import numpy as np
 
 from definitions import *
-import matplotlib.pyplot as plt
 
 
-def load_data():
+def choose_dataset_dict() -> Dict:
+    choose_model = {
+        'iris': load_iris,
+    }
+    return choose_model
+
+
+def possible_datasets() -> List[str]:
+    return list(choose_dataset_dict().keys())
+
+
+def load_dataset(dataset_name: str):
+    choose_dataset = choose_dataset_dict()
+    return choose_dataset[dataset_name]()
+
+
+def load_iris() -> [pd.DataFrame, List[str], List[str]]:
     data = datasets.load_iris()
     concatenated = np.c_[data['data'], data['target']]
     feature_names = data['feature_names']
-    target_name = 'target'
-    data_df = pd.DataFrame(data=concatenated, columns=feature_names + [target_name])
-    print(data_df.dtypes)
-    print(data_df.shape)
-    print(data_df.columns)
+    target_name = ['target']
+    data_df = pd.DataFrame(data=concatenated, columns=feature_names + target_name)
     return data_df, feature_names, target_name
 
 

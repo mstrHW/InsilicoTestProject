@@ -31,28 +31,31 @@ class MongoDBLoader(object):
             self.client.drop_database(database_name)
         self.database = self.client[database_name]
 
-    def insert_data(self, table_name, label, json_data):
+    def insert_data(self, table_name: str, label: str, json_data):
         self.database[table_name].insert_one({'label': label, 'data': json_data})
 
-    def find_data(self, table_name, label):
+    def find_data(self, table_name: str, label: str):
         json_answer = self.database[table_name].find_one({'label': label})['data']
         pd_df = pd.read_json(json_answer)
-        # pd.read_json(json_answer).values
         return pd_df
 
-    def save_graph(self, table_name, label, graph):
+    def find_data_json(self, table_name: str, label: str):
+        json_answer = self.database[table_name].find_one({'label': label})['data']
+        return json_answer
+
+    def save_graph(self, table_name: str, label: str, graph):
         # graph = pickle.dumps(graph)
         self.database[table_name].insert_one({'type': 'graph', 'label': label, 'graph': graph})
 
-    def save_correlation_table(self, table_name, label, correlation_table):
+    def save_correlation_table(self, table_name: str, label: str, correlation_table):
         json_data = df_to_json(correlation_table, 'values')
         self.database[table_name].insert_one({'type': 'correlation_table', 'label': label, 'data': json_data})
 
-    def load_correlation_table(self, table_name, label):
+    def load_correlation_table(self, table_name: str, label: str):
         json_data = self.database[table_name].find_one({'type': 'correlation_table', 'label': label})['data']
         return pd.read_json(json_data, 'values')
 
-    def load_graph(self, table_name, label):
+    def load_graph(self, table_name: str, label: str):
         pickled_graph = self.database[table_name].find_one({'type': 'graph', 'label': label})['graph']
         return pickle.loads(pickled_graph)
 
@@ -76,4 +79,48 @@ class MongoDBLoader(object):
 
     def save_predictions(self, model_name: str, predictions):
         self.database['models'].update({'model_name': model_name}, {'predictions': predictions})
+
+    def load_metrics(self):
+        return self.find_data_json('metrics', 'metrics')
+
+    def save_statistics(self, statistics):
+        data_types = statistics['data_types']
+        self.insert_data('statistics', 'data_types', data_types)
+
+        distributions = statistics['distributions']
+        for key in distributions:
+            self.save_graph('statistics', '{}_distribution'.format(key), distributions[key])
+
+        correlation_table = statistics['correlation_table']
+        self.save_correlation_table('statistics', 'correlation_table', correlation_table)
+
+        description = statistics['description']
+        self.insert_data('statistics', 'description', description)
+
+    def load_statistics(self, columns: List[str]):
+        data_types = self.find_data('statistics', 'data_types')
+
+        correlation_table = self.load_correlation_table('statistics', 'correlation_table')
+        correlation_table.columns = columns
+        correlation_table.index = columns
+
+        description = self.find_data('statistics', 'description')
+        return data_types, correlation_table, description
+
+    def save_splitted_dataset(self, train, test, test_size, feature_names, target):
+        self.insert_data('dataset', 'parameters', {'test_size': test_size})
+        self.insert_data('dataset', 'x_train', df_to_json(train[feature_names]))
+        self.insert_data('dataset', 'y_train', df_to_json(train[target]))
+
+        self.insert_data('dataset', 'x_test', df_to_json(test[feature_names]))
+        self.insert_data('dataset', 'y_test', df_to_json(test[target]))
+
+    def save_metrics(self, metrics):
+        self.insert_data('metrics', 'metrics', metrics)
+
+    def save_graphs(self, heatmap, roc):
+        self.save_graph('metrics', 'heatmap', heatmap)
+        self.save_graph('metrics', 'roc', roc)
+
+
 

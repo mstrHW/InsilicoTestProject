@@ -1,81 +1,22 @@
-from sklearn.model_selection import train_test_split
-
-from module.mongodb_loader import MongoDBLoader, np_to_json, df_to_json
-from module.load_sklearn_data import load_data
-from module import calculate_statistics
-from module.data_preprocessing import df_normalize_data
+from module.data_loader.mongodb_loader import MongoDBLoader, df_to_json
+from module.data_loader.load_sklearn_data import load_dataset
+from module.utils.calculate_statistics import calculate_statistics
+from module.data_loader.data_preprocessing import normalize_data, split_dataset
 
 
-def np_insert_splitted_dataset(x, y, mongodb_loader, data_table, test_size):
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size)
-    mongodb_loader.insert_data(data_table, 'x_train', np_to_json(x_train))
-    mongodb_loader.insert_data(data_table, 'y_train', np_to_json(y_train))
+def main(test_size: float, dataset_name: str, mongo_dataset_name: str):
+    mongodb_loader = MongoDBLoader(mongo_dataset_name, drop_existing=True)
 
-    mongodb_loader.insert_data(data_table, 'x_test', np_to_json(x_test))
-    mongodb_loader.insert_data(data_table, 'y_test', np_to_json(y_test))
+    data_frame, feature_names, target_name = load_dataset(dataset_name)
 
+    statistics = calculate_statistics(data_frame)
+    mongodb_loader.save_statistics(statistics)
 
-def split_dataset(data_frame, test_size):
-    train, test = train_test_split(data_frame, test_size=test_size)
-    return train, test
-
-
-def save_splitted_dataset(train, test, mongodb_loader, table_name, test_size, feature_names, target):
-    mongodb_loader.insert_data(table_name, 'x_train', df_to_json(train[feature_names], 'values'))
-    mongodb_loader.insert_data(table_name, 'y_train', df_to_json(train[target], 'values'))
-
-    mongodb_loader.insert_data(table_name, 'x_test', df_to_json(test[feature_names], 'values'))
-    mongodb_loader.insert_data(table_name, 'y_test', df_to_json(test[target], 'values'))
-
-
-def save_statistics(statistics, mongodb_loader):
-    data_types = statistics['data_types']
-    mongodb_loader.insert_data('statistics', 'data_types', data_types)
-
-    distributions = statistics['distributions']
-    for key in distributions:
-        mongodb_loader.save_graph('statistics', '{}_distribution'.format(key), distributions[key])
-
-    correlation_table = statistics['correlation_table']
-    mongodb_loader.save_correlation_table('statistics', 'correlation_table', correlation_table)
-
-    description = statistics['description']
-    mongodb_loader.insert_data('statistics', 'description', description)
-
-
-def load_statistics(mongodb_loader, feature_names):
-    data_types = mongodb_loader.find_data('statistics', 'data_types')
-    print(data_types)
-
-    for key in feature_names:
-        mongodb_loader.load_graph('statistics', '{}_distribution'.format(key))
-        # plt.show()
-
-    correlation_table = mongodb_loader.load_correlation_table('statistics', 'correlation_table')
-    correlation_table.columns = feature_names + ['target']
-    correlation_table.index = feature_names + ['target']
-    print(correlation_table)
-
-    description = mongodb_loader.find_data('statistics', 'description')
-    print(description)
-
-
-def main(test_size=0.33):
-    mongodb_loader = MongoDBLoader('iris_dataset2', drop_existing=True)
-
-    data_frame, feature_names, target_name = load_data()
-
-    statistics = calculate_statistics.main(data_frame)
-    save_statistics(statistics, mongodb_loader)
-
-    data_frame[feature_names] = df_normalize_data(data_frame[feature_names])
+    data_frame[feature_names] = normalize_data(data_frame[feature_names])
     mongodb_loader.insert_data('data', 'preprocessed_x', df_to_json(data_frame))
 
     train, test = split_dataset(data_frame, test_size)
-    save_splitted_dataset(train, test, mongodb_loader, 'dataset', test_size, feature_names, target_name)
+    mongodb_loader.save_splitted_dataset(train, test, test_size, feature_names, target_name)
 
     return train, test
 
-
-if __name__ == '__main__':
-    main(0.33)

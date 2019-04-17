@@ -4,12 +4,11 @@ import numpy as np
 from scipy import stats
 import pandas as pd
 
-from module.mongodb_loader import pickle, df_to_json, ax_to_json, dict_to_json
+from module.data_loader.mongodb_loader import df_to_json, ax_to_json
 
 
 def np_get_distribution(x):
-    sns.kdeplot(x, shade=True)    # Todo: return distribution
-    # plt.show()
+    return sns.kdeplot(x, shade=True)
 
 
 def pd_get_distribution(feature):
@@ -35,7 +34,7 @@ def data_types_to_df(data_frame):
     return pd.DataFrame.from_dict(data_types)
 
 
-def main(data_frame):
+def calculate_statistics(data_frame):
     answer = dict()
 
     data_types = data_types_to_df(data_frame)
@@ -45,7 +44,7 @@ def main(data_frame):
 
     for column_name in data_frame.columns:
         feature = data_frame[column_name]
-        distributions[column_name] = ax_to_json(pd_get_distribution(feature))
+        distributions[column_name] = ax_to_json(np_get_distribution(feature))
         plt.close()
 
     answer['distributions'] = distributions
@@ -54,33 +53,5 @@ def main(data_frame):
     answer['correlation_table'] = correlation_table
 
     answer['description'] = df_to_json(data_frame.describe())
-
-    return answer
-
-
-def main2(x, y):
-    answer = dict()
-
-    for feature_index in range(x.shape[1]):
-        feature = x[:, feature_index]
-        get_distribution(feature)
-
-    get_distribution(y)
-
-    answer['x_distribution'] = []
-    answer['y_distribution'] = []
-
-    correlation_table = np.zeros((x.shape[1], x.shape[1]))
-
-    for feature1_index in range(x.shape[1]):
-        feature1 = x[:, feature1_index]
-        percentiles = get_percentiles(feature1, [0.5, 2.5, 5, 25, 50, 75, 95, 97.5, 99.5])
-
-        for feature2_index in range(x.shape[1]):
-            feature2 = x[:, feature2_index]
-            coef, zeros_hypothesis = spearman_correlation(feature1, feature2)
-            correlation_table[feature1_index, feature2_index] = coef
-
-    answer['correlation_table'] = correlation_table.tolist()
 
     return answer

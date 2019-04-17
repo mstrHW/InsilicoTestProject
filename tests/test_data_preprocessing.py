@@ -1,6 +1,6 @@
 import numpy as np
 
-from module.data_preprocessing import normalize_data
+from module.data_loader.data_preprocessing import normalize_data
 
 
 def test_normalization_realizations():

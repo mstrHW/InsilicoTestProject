@@ -1,8 +1,4 @@
-from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
-
 from datetime import datetime
-import logging
 
 import sys
 import os
@@ -12,10 +8,6 @@ current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfra
 parent_dir = os.path.dirname(current_dir)
 root_dir = os.path.dirname(parent_dir)
 sys.path.insert(0, root_dir)
-
-
-from module.load_sklearn_data import load_data
-from module import calculate_statistics
 
 # from module.mongodb_loader import
 

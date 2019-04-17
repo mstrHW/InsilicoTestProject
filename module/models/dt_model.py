@@ -1,13 +1,12 @@
-from sklearn.neural_network import MLPClassifier
-import numpy as np
+from sklearn.tree import DecisionTreeClassifier
 
 
-class NNModel(object):
+class DTModel(object):
 
-    name = 'sklearn_mlp_classifier'
+    name = 'sklearn_decision_tree'
 
     def __init__(self):
-        self.classifier = MLPClassifier(hidden_layer_sizes=(25,))
+        self.classifier = DecisionTreeClassifier()
 
     def train(self, x, y):
         self.classifier.fit(x, y)
@@ -22,9 +21,7 @@ class NNModel(object):
         return self.classifier.predict_proba(x)
 
     def get_grid_search_parameters(self):
-        parameters = {'solver': ['lbfgs'], 'max_iter': [1000, 1500, 2000],
-                      'alpha': 10.0 ** -np.arange(1, 10, 3), 'hidden_layer_sizes': np.arange(10, 100, 10),
-                      'random_state': [0, 3, 6, 9]}
+        parameters = {'min_samples_split': range(10, 500, 20), 'max_depth': range(1, 20, 2)}
         return parameters
 
     def set_params(self, best_params_):
