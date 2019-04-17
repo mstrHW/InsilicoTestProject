@@ -1,6 +1,5 @@
 import numpy as np
 
-from data_preprocessing import normalize_data
 from module.mongodb_loader import MongoDBLoader
 from module.nn_model import NNModel
 

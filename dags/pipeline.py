@@ -1,12 +1,11 @@
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.operators.bash_operator import BashOperator
 
-import logging
 from datetime import datetime
 
-from load_sklearn_data import load_data
-import calculate_statistics
+from module.load_sklearn_data import load_data
+from module import calculate_statistics
+
 # from module.mongodb_loader import
 
 

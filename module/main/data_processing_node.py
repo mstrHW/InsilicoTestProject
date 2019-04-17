@@ -1,10 +1,9 @@
 from sklearn.model_selection import train_test_split
 
-from module.mongodb_loader import MongoDBLoader, np_to_json, dict_to_json, df_to_json
-from load_sklearn_data import load_data
-import calculate_statistics
-from data_preprocessing import df_normalize_data
-import matplotlib.pyplot as plt
+from module.mongodb_loader import MongoDBLoader, np_to_json, df_to_json
+from module.load_sklearn_data import load_data
+from module import calculate_statistics
+from module.data_preprocessing import df_normalize_data
 
 
 def np_insert_splitted_dataset(x, y, mongodb_loader, data_table, test_size):
