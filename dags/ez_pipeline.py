@@ -6,6 +6,13 @@ from airflow.operators.bash_operator import BashOperator
 import logging
 from datetime import datetime
 
+import sys
+import os
+import inspect
+
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
 
 from module.main import data_processing_node
 from module.main import model_interaction_node
