@@ -26,7 +26,9 @@ def launch_docker_container(**context):
     context['task_instance'].xcom_push('data', f'my name is {my_id}', context['execution_date'])
 
 
+dag_name = 'pipeline_python_2'
 with DAG('pipeline_python_2', default_args=default_args) as dag:
+    logging.info('start DAG {}'.format(dag_name))
     t1 = BashOperator(
         task_id='print_date1',
         bash_command='date')

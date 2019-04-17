@@ -6,7 +6,7 @@ from module import calculate_statistics
 from module.load_sklearn_data import load_data
 from module.data_preprocessing import normalize_data
 from module.mongodb_loader import *
-from module.nn_model import NNModel
+from module.models.nn_model import NNModel
 from module.plot_graphs import plot_confusion_matrix, plot_roc_per_class
 from module.metrics import multiclass_roc_auc_score, get_f1_per_class
 

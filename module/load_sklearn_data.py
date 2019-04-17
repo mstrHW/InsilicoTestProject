@@ -10,11 +10,12 @@ def load_data():
     data = datasets.load_iris()
     concatenated = np.c_[data['data'], data['target']]
     feature_names = data['feature_names']
-    data_df = pd.DataFrame(data=concatenated, columns=feature_names + ['target'])
+    target_name = 'target'
+    data_df = pd.DataFrame(data=concatenated, columns=feature_names + [target_name])
     print(data_df.dtypes)
     print(data_df.shape)
     print(data_df.columns)
-    return data_df, feature_names
+    return data_df, feature_names, target_name
 
 
 def get_nans_percent(df: pd.DataFrame, columns: List[str] = None) -> float:

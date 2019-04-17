@@ -1,7 +1,7 @@
 import numpy as np
 
 from module.mongodb_loader import MongoDBLoader
-from module.nn_model import NNModel
+from module.models.nn_model import NNModel
 
 # def test_cr():
 #     x = [
