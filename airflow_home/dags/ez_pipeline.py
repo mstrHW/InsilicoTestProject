@@ -15,6 +15,8 @@ parent_dir = os.path.dirname(current_dir)
 root_dir = os.path.dirname(parent_dir)
 sys.path.insert(0, root_dir)
 
+print(root_dir)
+
 from module.main import data_processing_node
 from module.main import model_interaction_node
 # from module.mongodb_loader import
