@@ -2,6 +2,7 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.bash_operator import BashOperator
 
+from definitions import *
 import logging
 from datetime import datetime
 
