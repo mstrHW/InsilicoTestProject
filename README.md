@@ -12,6 +12,7 @@ parameters:
 --dataset_name: one of available datasets (iris)
 
 --mongo_dataset_name: what name to save dataset in mongo (equals to the dataset_name by default)
+If a dataset with the same name is found in MongoDB, it will be deleted.
 
 --logging_file: (IN THE NEXT VERSION) logging_file (if None, the logging information will be displayed in the console)
     
